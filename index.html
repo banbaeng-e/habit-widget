@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>일일 목표 & 주간 습관 대시보드</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+  <style>
+    body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif; background-color: #f8fafc; }
+    .check-anim { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .check-anim:active { transform: scale(0.9); }
+    .progress-ring__circle {
+      transition: stroke-dashoffset 0.35s ease-in-out;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
+  </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+
+  <div class="max-w-5xl mx-auto space-y-6">
+    
+    <!-- 상단 헤더 & 날짜 네비게이션 -->
+    <header class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-1 bg-indigo-50 text-indigo-600 text-xs font-semibold rounded-full tracking-wide">HABIT TRACKER</span>
+          <span id="currentDateBadge" class="text-xs text-slate-400 font-medium"></span>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-900 mt-1">일일 목표 & 주간 연속 달성 대시보드</h1>
+      </div>
+
+      <!-- 주간 이동 컨트롤 -->
+      <div class="flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl self-start sm:self-auto">
+        <button onclick="changeWeek(-1)" class="p-2 hover:bg-white rounded-lg text-slate-600 hover:text-slate-900 transition shadow-sm" title="이전 주">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <span id="weekRangeText" class="text-sm font-semibold px-2 text-slate-700 min-w-[140px] text-center"></span>
+        <button onclick="changeWeek(1)" class="p-2 hover:bg-white rounded-lg text-slate-600 hover:text-slate-900 transition shadow-sm" title="다음 주">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button onclick="resetToToday()" class="text-xs bg-white text-indigo-600 font-semibold px-2.5 py-1.5 rounded-lg border border-slate-200/80 hover:bg-indigo-50 transition">
+          오늘
+        </button>
+      </div>
+    </header>
+
+    <!-- KPI 요약 카드 3종 -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- 오늘의 달성률 -->
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">오늘의 목표 달성</p>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span id="todayCompletedCount" class="text-3xl font-extrabold text-slate-900">0/0</span>
+            <span id="todayPercentText" class="text-sm font-semibold text-indigo-600">0%</span>
+          </div>
+          <p id="todayStatusMsg" class="text-xs text-slate-500 mt-1">오늘의 체크리스트를 시작해보세요!</p>
+        </div>
+        <div class="relative w-16 h-16 flex items-center justify-center">
+          <svg class="w-16 h-16">
+            <circle class="text-slate-100" stroke-width="6" stroke="currentColor" fill="transparent" r="26" cx="32" cy="32"/>
+            <circle id="todayProgressRing" class="text-indigo-600 progress-ring__circle" stroke-width="6" stroke-dasharray="163.36" stroke-dashoffset="163.36" stroke-linecap="round" stroke="currentColor" fill="transparent" r="26" cx="32" cy="32"/>
+          </svg>
+          <span class="absolute text-xs font-bold text-indigo-600" id="ringCenterText">0%</span>
+        </div>
+      </div>
+
+      <!-- 주간 통합 달성률 -->
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 flex flex-col justify-between">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">이번 주 전체 달성률</p>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span id="weeklyRateValue" class="text-3xl font-extrabold text-slate-900">0%</span>
+              <span id="weeklyCheckFraction" class="text-xs text-slate-400 font-medium">(0 / 0회)</span>
+            </div>
+          </div>
+          <span class="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          </span>
+        </div>
+        <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mt-4">
+          <div id="weeklyProgressBar" class="bg-emerald-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- 최장 & 현재 연속 달성 하이라이트 -->
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 flex flex-col justify-between">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">최고 연속 달성 (Streak)</p>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span id="bestStreakValue" class="text-3xl font-extrabold text-amber-500">0일</span>
+              <span id="bestStreakHabitName" class="text-xs text-slate-500 font-medium truncate max-w-[140px]">기록 없음</span>
+            </div>
+          </div>
+          <span class="p-2.5 bg-amber-50 text-amber-500 rounded-xl text-lg leading-none">🔥</span>
+        </div>
+        <p class="text-xs text-slate-400 mt-3">오늘까지 끊기지 않고 이어온 가장 긴 습관 기록입니다.</p>
+      </div>
+    </section>
+
+    <!-- 메인 컨텐츠: 오늘의 집중 체크 + 주간 매트릭스 -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- 좌측: 오늘의 빠른 체크 & 새 습관 추가 -->
+      <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 flex flex-col justify-between space-y-6">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span>⚡ 오늘의 일일 목표</span>
+            </h2>
+            <span id="todayQuickDate" class="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md"></span>
+          </div>
+
+          <!-- 오늘의 체크리스트 목록 -->
+          <div id="todayChecklist" class="space-y-2.5"></div>
+        </div>
+
+        <!-- 새 목표 추가 폼 -->
+        <form onsubmit="addHabit(event)" class="pt-4 border-t border-slate-100 space-y-3">
+          <label class="block text-xs font-semibold text-slate-500 uppercase">새 일일 습관 등록</label>
+          <div class="flex gap-2">
+            <select id="newHabitCategory" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-2.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="📌">📌 일반</option>
+              <option value="✍️">✍️ 기록/필사</option>
+              <option value="💻">💻 개발/학습</option>
+              <option value="🌱">🌱 취미/루틴</option>
+              <option value="🏃">🏃 건강/운동</option>
+            </select>
+            <input type="text" id="newHabitInput" placeholder="예: 15분 필사, 물 2L 마시기" required
+              class="flex-1 bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm py-2.5 rounded-xl transition shadow-sm">
+            + 목표 추가하기
+          </button>
+        </form>
+      </section>
+
+      <!-- 우측 (2칸 차지): 주간 트래커 매트릭스 & 연속 달성 보드 -->
+      <section class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 flex flex-col justify-between">
+        <div>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">🗓️ 주간 습관 그리드 & 연속 기록</h2>
+              <p class="text-xs text-slate-400 mt-0.5">요일별 버튼을 클릭해 과거 기록이나 오늘의 달성 여부를 바로 수정할 수 있습니다.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="resetSampleData()" class="text-xs text-slate-400 hover:text-slate-600 underline px-2 py-1">기본 샘플 복원</button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr id="matrixHeaderRow" class="border-b border-slate-200 text-xs font-semibold text-slate-400">
+                  <!-- JS로 렌더링 -->
+                </tr>
+              </thead>
+              <tbody id="matrixBody" class="divide-y divide-slate-100 text-sm">
+                <!-- JS로 렌더링 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 하단 일일 메모 / 회고 바 -->
+        <div class="mt-6 pt-4 border-t border-slate-100">
+          <div class="flex items-center justify-between mb-1.5">
+            <label for="dailyMemoInput" class="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+              <span>📝 오늘의 한 줄 회고</span>
+              <span id="memoSaveStatus" class="text-[11px] text-emerald-600 font-normal opacity-0 transition-opacity">저장됨 ✓</span>
+            </label>
+          </div>
+          <input type="text" id="dailyMemoInput" oninput="saveDailyMemo(this.value)"
+            placeholder="오늘 루틴을 진행하며 느낀 점이나 간단한 메모를 남겨보세요 (자동 저장)"
+            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-700 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500">
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'HABIT_DASHBOARD_V1';
+    let weekOffset = 0; // 0: 이번 주, -1: 지난주, +1: 다음주
+
+    // 로컬 시간 기준 YYYY-MM-DD 포맷 반환
+    function formatDateKey(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+    const todayKey = formatDateKey(todayDate);
+
+    // 초기 샘플 데이터 생성 (최근 연속 달성 기록 포함)
+    function getInitialData() {
+      const dMinus1 = new Date(todayDate); dMinus1.setDate(todayDate.getDate() - 1);
+      const dMinus2 = new Date(todayDate); dMinus2.setDate(todayDate.getDate() - 2);
+      const dMinus3 = new Date(todayDate); dMinus3.setDate(todayDate.getDate() - 3);
+      const dMinus4 = new Date(todayDate); dMinus4.setDate(todayDate.getDate() - 4);
+
+      const k0 = todayKey;
+      const k1 = formatDateKey(dMinus1);
+      const k2 = formatDateKey(dMinus2);
+      const k3 = formatDateKey(dMinus3);
+      const k4 = formatDateKey(dMinus4);
+
+      return {
+        habits: [
+          { id: 'h1', icon: '✍️', name: '아침 15분 독서 및 문장 필사', logs: { [k3]: true, [k2]: true, [k1]: true, [k0]: true } },
+          { id: 'h2', icon: '💻', name: '사이드 프로젝트 & 자동화 실습 30분', logs: { [k4]: true, [k3]: true, [k2]: true, [k1]: true } },
+          { id: 'h3', icon: '🌱', name: '실내 반려식물 물주기 & 환기 체크', logs: { [k2]: true, [k1]: true, [k0]: true } },
+          { id: 'h4', icon: '🏃', name: '가벼운 산책 30분 (7,000보 이상)', logs: { [k3]: true, [k1]: true } }
+        ],
+        memos: {
+          [k0]: '오늘 아침 필사 완료! 저녁에 산책만 채우면 완벽한 하루.'
+        }
+      };
+    }
+
+    let state = loadState();
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        const initial = getInitialData();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+        return initial;
+      }
+      try {
+        return JSON.parse(raw);
+      } catch (e) {
+        return getInitialData();
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    // 현재 선택된 주의 월~일 날짜 배열 반환
+    function getWeekDays(offset = 0) {
+      const base = new Date(todayDate);
+      base.setDate(base.getDate() + offset * 7);
+      const dayOfWeek = base.getDay(); // 0(일) ~ 6(토)
+      const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      const monday = new Date(base);
+      monday.setDate(base.getDate() + diffToMonday);
+
+      const days = [];
+      const dayNames = ['월', '화', '수', '목', '금', '토', '일'];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        days.push({
+          date: d,
+          key: formatDateKey(d),
+          dayName: dayNames[i],
+          dayNum: d.getDate(),
+          monthNum: d.getMonth() + 1,
+          isToday: formatDateKey(d) === todayKey
+        });
+      }
+      return days;
+    }
+
+    // 특정 습관의 현재 연속 달성 일수(Streak) 계산
+    // 오늘 달성했으면 오늘부터 역산, 오늘 아직 안 했더라도 어제 달성했으면 어제부터 역산
+    function calculateStreak(logs) {
+      let streak = 0;
+      let cursor = new Date(todayDate);
+
+      if (!logs[formatDateKey(cursor)]) {
+        cursor.setDate(cursor.getDate() - 1);
+      }
+
+      while (logs[formatDateKey(cursor)]) {
+        streak++;
+        cursor.setDate(cursor.getDate() - 1);
+      }
+      return streak;
+    }
+
+    // 체크 토글
+    function toggleHabitCheck(habitId, dateKey) {
+      const habit = state.habits.find(h => h.id === habitId);
+      if (!habit) return;
+      if (habit.logs[dateKey]) {
+        delete habit.logs[dateKey];
+      } else {
+        habit.logs[dateKey] = true;
+      }
+      saveState();
+      render();
+    }
+
+    // 새 습관 추가
+    function addHabit(e) {
+      e.preventDefault();
+      const input = document.getElementById('newHabitInput');
+      const cat = document.getElementById('newHabitCategory');
+      const name = input.value.trim();
+      if (!name) return;
+
+      state.habits.push({
+        id: 'h_' + Date.now(),
+        icon: cat.value,
+        name: name,
+        logs: {}
+      });
+      input.value = '';
+      saveState();
+      render();
+    }
+
+    // 습관 삭제
+    function deleteHabit(habitId) {
+      state.habits = state.habits.filter(h => h.id !== habitId);
+      saveState();
+      render();
+    }
+
+    // 주간 이동
+    function changeWeek(delta) {
+      weekOffset += delta;
+      render();
+    }
+
+    function resetToToday() {
+      weekOffset = 0;
+      render();
+    }
+
+    // 샘플 초기화
+    function resetSampleData() {
+      state = getInitialData();
+      weekOffset = 0;
+      saveState();
+      render();
+    }
+
+    // 메모 저장
+    let memoTimeout;
+    function saveDailyMemo(val) {
+      if (!state.memos) state.memos = {};
+      state.memos[todayKey] = val;
+      saveState();
+      const badge = document.getElementById('memoSaveStatus');
+      badge.classList.remove('opacity-0');
+      clearTimeout(memoTimeout);
+      memoTimeout = setTimeout(() => badge.classList.add('opacity-0'), 1500);
+    }
+
+    // 전체 UI 렌더링
+    function render() {
+      const weekDays = getWeekDays(weekOffset);
+      const totalHabits = state.habits.length;
+
+      // 1. 상단 날짜 및 주간 범위 표시
+      const korDays = ['일', '월', '화', '수', '목', '금', '토'];
+      document.getElementById('currentDateBadge').textContent =
+        `${todayDate.getFullYear()}년 ${todayDate.getMonth() + 1}월 ${todayDate.getDate()}일 (${korDays[todayDate.getDay()]})`;
+      document.getElementById('todayQuickDate').textContent =
+        `${todayDate.getMonth() + 1}/${todayDate.getDate()} (${korDays[todayDate.getDay()]})`;
+
+      const firstDay = weekDays[0];
+      const lastDay = weekDays[6];
+      document.getElementById('weekRangeText').textContent =
+        `${firstDay.monthNum}.${firstDay.dayNum} (월) ~ ${lastDay.monthNum}.${lastDay.dayNum} (일)`;
+
+      // 2. 오늘의 달성률 계산 및 원형 프로그레스 업데이트
+      let todayDone = 0;
+      state.habits.forEach(h => {
+        if (h.logs[todayKey]) todayDone++;
+      });
+      const todayPercent = totalHabits === 0 ? 0 : Math.round((todayDone / totalHabits) * 100);
+
+      document.getElementById('todayCompletedCount').textContent = `${todayDone}/${totalHabits}`;
+      document.getElementById('todayPercentText').textContent = `${todayPercent}%`;
+      document.getElementById('ringCenterText').textContent = `${todayPercent}%`;
+
+      const circumference = 2 * Math.PI * 26;
+      const offset = circumference - (todayPercent / 100) * circumference;
+      document.getElementById('todayProgressRing').style.strokeDashoffset = offset;
+
+      const msgEl = document.getElementById('todayStatusMsg');
+      if (totalHabits === 0) msgEl.textContent = '아래에서 새로운 일일 목표를 추가해보세요.';
+      else if (todayPercent === 100) msgEl.textContent = '🎉 오늘의 모든 목표를 완벽히 달성했습니다!';
+      else if (todayPercent >= 50) msgEl.textContent = '절반 이상 달성! 남은 목표도 마무리해보세요.';
+      else msgEl.textContent = '오늘 달성한 습관에 체크 표시를 눌러보세요.';
+
+      // 3. 주간 통합 달성률 및 최고 Streak 계산
+      let weeklyChecks = 0;
+      const weeklyTotalPossible = totalHabits * 7;
+      let bestStreak = 0;
+      let bestHabitName = '기록 없음';
+
+      state.habits.forEach(h => {
+        weekDays.forEach(d => {
+          if (h.logs[d.key]) weeklyChecks++;
+        });
+        const s = calculateStreak(h.logs);
+        if (s > bestStreak) {
+          bestStreak = s;
+          bestHabitName = `${h.icon} ${h.name}`;
+        }
+      });
+
+      const weeklyRate = weeklyTotalPossible === 0 ? 0 : Math.round((weeklyChecks / weeklyTotalPossible) * 100);
+      document.getElementById('weeklyRateValue').textContent = `${weeklyRate}%`;
+      document.getElementById('weeklyCheckFraction').textContent = `(${weeklyChecks} / ${weeklyTotalPossible}회)`;
+      document.getElementById('weeklyProgressBar').style.width = `${weeklyRate}%`;
+
+      document.getElementById('bestStreakValue').textContent = `${bestStreak}일`;
+      document.getElementById('bestStreakHabitName').textContent = bestStreak > 0 ? bestHabitName : '진행 중인 연속 기록 없음';
+
+      // 4. 좌측: 오늘의 빠른 체크리스트 렌더링
+      const checklistEl = document.getElementById('todayChecklist');
+      if (totalHabits === 0) {
+        checklistEl.innerHTML = `<div class="text-center py-8 text-xs text-slate-400">등록된 목표가 없습니다.</div>`;
+      } else {
+        checklistEl.innerHTML = state.habits.map(h => {
+          const isChecked = !!h.logs[todayKey];
+          const streak = calculateStreak(h.logs);
+          return `
+            <div onclick="toggleHabitCheck('${h.id}', '${todayKey}')"
+                 class="check-anim cursor-pointer flex items-center justify-between p-3 rounded-xl border transition ${
+                   isChecked ? 'bg-indigo-50/60 border-indigo-200 text-slate-900' : 'bg-slate-50/60 border-slate-200/70 text-slate-700 hover:bg-slate-100/70'
+                 }">
+              <div class="flex items-center gap-3 min-w-0 pr-2">
+                <div class="w-5 h-5 rounded-md flex items-center justify-center transition ${
+                  isChecked ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-300'
+                }">
+                  ${isChecked ? '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>' : ''}
+                </div>
+                <span class="text-sm font-medium truncate ${isChecked ? 'line-through text-slate-400' : ''}">${h.icon} ${h.name}</span>
+              </div>
+              <span class="shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${
+                streak > 0 ? 'bg-amber-100 text-amber-700' : 'bg-slate-200/70 text-slate-500'
+              }">🔥 ${streak}일</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 5. 우측: 주간 매트릭스 테이블 헤더 렌더링
+      const headerRow = document.getElementById('matrixHeaderRow');
+      headerRow.innerHTML = `
+        <th class="py-3 pr-4 min-w-[180px]">습관 항목</th>
+        ${weekDays.map(d => `
+          <th class="py-3 px-1.5 text-center min-w-[44px]">
+            <div class="flex flex-col items-center">
+              <span class="text-[11px] ${d.isToday ? 'text-indigo-600 font-bold' : 'text-slate-400'}">${d.dayName}</span>
+              <span class="mt-0.5 w-6 h-6 flex items-center justify-center rounded-full text-xs ${ d.isToday ? 'bg-indigo-600 text-white font-bold' : 'text-slate-600' }">${d.dayNum}</span>
+            </div>
+          </th>
+        `).join('')}
+        <th class="py-3 pl-3 text-center min-w-[72px]">주간 달성</th>
+        <th class="py-3 pl-2 text-center min-w-[72px]">연속(Streak)</th>
+        <th class="py-3 pl-1 text-right w-8"></th>
+      `;
+
+      // 6. 우측: 주간 매트릭스 바디 렌더링
+      const bodyEl = document.getElementById('matrixBody');
+      if (totalHabits === 0) {
+        bodyEl.innerHTML = `<tr><td colspan="11" class="text-center py-10 text-xs text-slate-400">습관을 추가하면 주간 달성표가 표시됩니다.</td></tr>`;
+      } else {
+        bodyEl.innerHTML = state.habits.map(h => {
+          let rowWeekCount = 0;
+          const cellsHtml = weekDays.map(d => {
+            const done = !!h.logs[d.key];
+            if (done) rowWeekCount++;
+            return `
+              <td class="py-3 px-1.5 text-center">
+                <button onclick="toggleHabitCheck('${h.id}', '${d.key}')"
+                  class="check-anim w-8 h-8 rounded-xl mx-auto flex items-center justify-center transition ${
+                    done
+                      ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-200'
+                      : d.isToday
+                        ? 'bg-indigo-50 border-2 border-indigo-300 text-transparent hover:border-indigo-400'
+                        : 'bg-slate-100 text-transparent hover:bg-slate-200'
+                  }" title="${d.key} 달성 체크">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                </button>
+              </td>
+            `;
+          }).join('');
+
+          const streak = calculateStreak(h.logs);
+          const rowRate = Math.round((rowWeekCount / 7) * 100);
+
+          return `
+            <tr class="hover:bg-slate-50/80 transition group">
+              <td class="py-3.5 pr-4 font-medium text-slate-800">
+                <div class="flex items-center gap-2">
+                  <span class="text-base">${h.icon}</span>
+                  <span class="truncate max-w-[200px]" title="${h.name}">${h.name}</span>
+                </div>
+              </td>
+              ${cellsHtml}
+              <td class="py-3.5 pl-3 text-center">
+                <span class="text-xs font-semibold text-slate-700">${rowWeekCount}/7</span>
+                <span class="block text-[10px] text-slate-400">${rowRate}%</span>
+              </td>
+              <td class="py-3.5 pl-2 text-center">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${
+                  streak >= 3 ? 'bg-amber-100 text-amber-700' : streak > 0 ? 'bg-slate-100 text-slate-700' : 'text-slate-400'
+                }">
+                  🔥 ${streak}일
+                </span>
+              </td>
+              <td class="py-3.5 pl-1 text-right">
+                <button onclick="deleteHabit('${h.id}')" class="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-500 p-1 transition" title="습관 삭제">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // 7. 오늘의 한 줄 회고 로드
+      const memoInput = document.getElementById('dailyMemoInput');
+      memoInput.value = (state.memos && state.memos[todayKey]) ? state.memos[todayKey] : '';
+    }
+
+    // 초기 실행
+    render();
+  </script>
+</body>
+</html>
