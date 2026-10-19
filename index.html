@@ -358,7 +358,6 @@
 
     // 습관 삭제
     function deleteHabit(habitId) {
-      if (!confirm('이 습관과 기록을 정말 삭제할까요?')) return;
       state.habits = state.habits.filter(h => h.id !== habitId);
       saveState();
       render();
@@ -460,6 +459,7 @@
 
       // 4. 좌측: 오늘의 빠른 체크리스트 렌더링
       const checklistEl = document.getElementById('todayChecklist');
+      // [수정 후 코드] 체크 영역(왼쪽)과 삭제 버튼(오른쪽)을 완전히 분리!
       if (totalHabits === 0) {
         checklistEl.innerHTML = `<div class="text-center py-8 text-xs text-slate-400">등록된 목표가 없습니다.</div>`;
       } else {
@@ -467,22 +467,23 @@
           const isChecked = !!h.logs[todayKey];
           const streak = calculateStreak(h.logs);
           return `
-            <div onclick="toggleHabitCheck('${h.id}', '${todayKey}')"
-                 class="check-anim cursor-pointer flex items-center justify-between p-3 rounded-xl border transition ${isChecked ? 'bg-indigo-50/60 border-indigo-200 text-slate-900' : 'bg-slate-50/60 border-slate-200/70 text-slate-700 hover:bg-slate-100/70'
+            <div class="check-anim flex items-center justify-between p-3 rounded-xl border transition ${isChecked ? 'bg-indigo-50/60 border-indigo-200 text-slate-900' : 'bg-slate-50/60 border-slate-200/70 text-slate-700 hover:bg-slate-100/70'
             }">
-              <div class="flex items-center gap-3 min-w-0 pr-2">
-                <div class="w-5 h-5 rounded-md flex items-center justify-center transition ${isChecked ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-300'
+              <!-- 왼쪽 영역: 여기를 클릭할 때만 체크/언체크 작동 -->
+              <div onclick="toggleHabitCheck('${h.id}', '${todayKey}')" class="cursor-pointer flex items-center gap-3 min-w-0 pr-2 flex-1">
+                <div class="w-5 h-5 shrink-0 rounded-md flex items-center justify-center transition ${isChecked ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-300'
             }">
                   ${isChecked ? '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>' : ''}
                 </div>
                 <span class="text-sm font-medium truncate ${isChecked ? 'line-through text-slate-400' : ''}">${h.icon} ${h.name}</span>
               </div>
-             <!-- [수정 후] 불꽃 배지 옆에 ✕ 삭제 버튼 추가 -->
+
+              <!-- 오른쪽 영역: 연속 달성 배지 & 독립된 삭제 버튼 -->
               <div class="flex items-center gap-1.5 shrink-0">
                 <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${streak > 0 ? 'bg-amber-100 text-amber-700' : 'bg-slate-200/70 text-slate-500'
             }">🔥 ${streak}일</span>
-                <button onclick="event.stopPropagation(); deleteHabit('${h.id}')" 
-                        class="text-slate-300 hover:text-rose-500 p-1 rounded-lg hover:bg-rose-50 transition" title="습관 삭제">
+                <button type="button" onclick="deleteHabit('${h.id}')" 
+                        class="text-slate-400 hover:text-rose-600 px-1.5 py-0.5 rounded-lg hover:bg-rose-50 transition font-bold text-xs" title="습관 삭제">
                   ✕
                 </button>
               </div>
