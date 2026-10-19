@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +8,19 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
   <style>
-    body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif; background-color: #f8fafc; }
-    .check-anim { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-    .check-anim:active { transform: scale(0.9); }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f8fafc;
+    }
+
+    .check-anim {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .check-anim:active {
+      transform: scale(0.9);
+    }
+
     .progress-ring__circle {
       transition: stroke-dashoffset 0.35s ease-in-out;
       transform: rotate(-90deg);
@@ -17,15 +28,18 @@
     }
   </style>
 </head>
+
 <body class="text-slate-800 antialiased min-h-screen py-8 px-4 sm:px-6 lg:px-8">
 
   <div class="max-w-5xl mx-auto space-y-6">
-    
+
     <!-- 상단 헤더 & 날짜 네비게이션 -->
-    <header class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <header
+      class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
         <div class="flex items-center gap-2">
-          <span class="px-2.5 py-1 bg-indigo-50 text-indigo-600 text-xs font-semibold rounded-full tracking-wide">HABIT TRACKER</span>
+          <span class="px-2.5 py-1 bg-indigo-50 text-indigo-600 text-xs font-semibold rounded-full tracking-wide">HABIT
+            TRACKER</span>
           <span id="currentDateBadge" class="text-xs text-slate-400 font-medium"></span>
         </div>
         <h1 class="text-2xl font-bold text-slate-900 mt-1">습관 트래킹</h1>
@@ -33,14 +47,21 @@
 
       <!-- 주간 이동 컨트롤 -->
       <div class="flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl self-start sm:self-auto">
-        <button onclick="changeWeek(-1)" class="p-2 hover:bg-white rounded-lg text-slate-600 hover:text-slate-900 transition shadow-sm" title="이전 주">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        <button onclick="changeWeek(-1)"
+          class="p-2 hover:bg-white rounded-lg text-slate-600 hover:text-slate-900 transition shadow-sm" title="이전 주">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
         </button>
         <span id="weekRangeText" class="text-sm font-semibold px-2 text-slate-700 min-w-[140px] text-center"></span>
-        <button onclick="changeWeek(1)" class="p-2 hover:bg-white rounded-lg text-slate-600 hover:text-slate-900 transition shadow-sm" title="다음 주">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        <button onclick="changeWeek(1)"
+          class="p-2 hover:bg-white rounded-lg text-slate-600 hover:text-slate-900 transition shadow-sm" title="다음 주">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
         </button>
-        <button onclick="resetToToday()" class="text-xs bg-white text-indigo-600 font-semibold px-2.5 py-1.5 rounded-lg border border-slate-200/80 hover:bg-indigo-50 transition">
+        <button onclick="resetToToday()"
+          class="text-xs bg-white text-indigo-600 font-semibold px-2.5 py-1.5 rounded-lg border border-slate-200/80 hover:bg-indigo-50 transition">
           오늘
         </button>
       </div>
@@ -60,8 +81,11 @@
         </div>
         <div class="relative w-16 h-16 flex items-center justify-center">
           <svg class="w-16 h-16">
-            <circle class="text-slate-100" stroke-width="6" stroke="currentColor" fill="transparent" r="26" cx="32" cy="32"/>
-            <circle id="todayProgressRing" class="text-indigo-600 progress-ring__circle" stroke-width="6" stroke-dasharray="163.36" stroke-dashoffset="163.36" stroke-linecap="round" stroke="currentColor" fill="transparent" r="26" cx="32" cy="32"/>
+            <circle class="text-slate-100" stroke-width="6" stroke="currentColor" fill="transparent" r="26" cx="32"
+              cy="32" />
+            <circle id="todayProgressRing" class="text-indigo-600 progress-ring__circle" stroke-width="6"
+              stroke-dasharray="163.36" stroke-dashoffset="163.36" stroke-linecap="round" stroke="currentColor"
+              fill="transparent" r="26" cx="32" cy="32" />
           </svg>
           <span class="absolute text-xs font-bold text-indigo-600" id="ringCenterText">0%</span>
         </div>
@@ -78,11 +102,15 @@
             </div>
           </div>
           <span class="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
           </span>
         </div>
         <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mt-4">
-          <div id="weeklyProgressBar" class="bg-emerald-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+          <div id="weeklyProgressBar" class="bg-emerald-500 h-full rounded-full transition-all duration-300"
+            style="width: 0%"></div>
         </div>
       </div>
 
@@ -93,7 +121,8 @@
             <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">최고 연속 달성 (Streak)</p>
             <div class="flex items-baseline gap-2 mt-1">
               <span id="bestStreakValue" class="text-3xl font-extrabold text-amber-500">0일</span>
-              <span id="bestStreakHabitName" class="text-xs text-slate-500 font-medium truncate max-w-[140px]">기록 없음</span>
+              <span id="bestStreakHabitName" class="text-xs text-slate-500 font-medium truncate max-w-[140px]">기록
+                없음</span>
             </div>
           </div>
           <span class="p-2.5 bg-amber-50 text-amber-500 rounded-xl text-lg leading-none">🔥</span>
@@ -104,15 +133,17 @@
 
     <!-- 메인 컨텐츠: 오늘의 집중 체크 + 주간 매트릭스 -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      
+
       <!-- 좌측: 오늘의 빠른 체크 & 새 습관 추가 -->
-      <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 flex flex-col justify-between space-y-6">
+      <section
+        class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 flex flex-col justify-between space-y-6">
         <div>
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
               <span>⚡ 오늘의 일일 목표</span>
             </h2>
-            <span id="todayQuickDate" class="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md"></span>
+            <span id="todayQuickDate"
+              class="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md"></span>
           </div>
 
           <!-- 오늘의 체크리스트 목록 -->
@@ -123,7 +154,8 @@
         <form onsubmit="addHabit(event)" class="pt-4 border-t border-slate-100 space-y-3">
           <label class="block text-xs font-semibold text-slate-500 uppercase">새 일일 습관 등록</label>
           <div class="flex flex-col gap-2">
-            <select id="newHabitCategory" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-2.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <select id="newHabitCategory"
+              class="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-2.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
               <option value="📌">📌 일반</option>
               <option value="✍️">✍️ 기록/필사</option>
               <option value="💻">💻 개발/학습</option>
@@ -133,14 +165,16 @@
             <input type="text" id="newHabitInput" placeholder="예: 15분 필사, 물 2L 마시기" required
               class="flex-1 min-w-0 bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
           </div>
-          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm py-2.5 rounded-xl transition shadow-sm">
+          <button type="submit"
+            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm py-2.5 rounded-xl transition shadow-sm">
             + 목표 추가하기
           </button>
         </form>
       </section>
 
       <!-- 우측 (2칸 차지): 주간 트래커 매트릭스 & 연속 달성 보드 -->
-      <section class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 flex flex-col justify-between">
+      <section
+        class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 flex flex-col justify-between">
         <div>
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
             <div>
@@ -148,7 +182,8 @@
               <p class="text-xs text-slate-400 mt-0.5">요일별 버튼을 클릭해 과거 기록이나 오늘의 달성 여부를 바로 수정할 수 있습니다.</p>
             </div>
             <div class="flex items-center gap-2">
-              <button onclick="resetSampleData()" class="text-xs text-slate-400 hover:text-slate-600 underline px-2 py-1">기본 샘플 복원</button>
+              <button onclick="resetSampleData()"
+                class="text-xs text-slate-400 hover:text-slate-600 underline px-2 py-1">기본 샘플 복원</button>
             </div>
           </div>
 
@@ -171,7 +206,8 @@
           <div class="flex items-center justify-between mb-1.5">
             <label for="dailyMemoInput" class="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
               <span>📝 오늘의 한 줄 회고</span>
-              <span id="memoSaveStatus" class="text-[11px] text-emerald-600 font-normal opacity-0 transition-opacity">저장됨 ✓</span>
+              <span id="memoSaveStatus"
+                class="text-[11px] text-emerald-600 font-normal opacity-0 transition-opacity">저장됨 ✓</span>
             </label>
           </div>
           <input type="text" id="dailyMemoInput" oninput="saveDailyMemo(this.value)"
@@ -322,6 +358,7 @@
 
     // 습관 삭제
     function deleteHabit(habitId) {
+      if (!confirm('이 습관과 기록을 정말 삭제할까요?')) return;
       state.habits = state.habits.filter(h => h.id !== habitId);
       saveState();
       render();
@@ -431,20 +468,24 @@
           const streak = calculateStreak(h.logs);
           return `
             <div onclick="toggleHabitCheck('${h.id}', '${todayKey}')"
-                 class="check-anim cursor-pointer flex items-center justify-between p-3 rounded-xl border transition ${
-                   isChecked ? 'bg-indigo-50/60 border-indigo-200 text-slate-900' : 'bg-slate-50/60 border-slate-200/70 text-slate-700 hover:bg-slate-100/70'
-                 }">
+                 class="check-anim cursor-pointer flex items-center justify-between p-3 rounded-xl border transition ${isChecked ? 'bg-indigo-50/60 border-indigo-200 text-slate-900' : 'bg-slate-50/60 border-slate-200/70 text-slate-700 hover:bg-slate-100/70'
+            }">
               <div class="flex items-center gap-3 min-w-0 pr-2">
-                <div class="w-5 h-5 rounded-md flex items-center justify-center transition ${
-                  isChecked ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-300'
-                }">
+                <div class="w-5 h-5 rounded-md flex items-center justify-center transition ${isChecked ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-300'
+            }">
                   ${isChecked ? '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>' : ''}
                 </div>
                 <span class="text-sm font-medium truncate ${isChecked ? 'line-through text-slate-400' : ''}">${h.icon} ${h.name}</span>
               </div>
-              <span class="shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${
-                streak > 0 ? 'bg-amber-100 text-amber-700' : 'bg-slate-200/70 text-slate-500'
-              }">🔥 ${streak}일</span>
+             <!-- [수정 후] 불꽃 배지 옆에 ✕ 삭제 버튼 추가 -->
+              <div class="flex items-center gap-1.5 shrink-0">
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${streak > 0 ? 'bg-amber-100 text-amber-700' : 'bg-slate-200/70 text-slate-500'
+            }">🔥 ${streak}일</span>
+                <button onclick="event.stopPropagation(); deleteHabit('${h.id}')" 
+                        class="text-slate-300 hover:text-rose-500 p-1 rounded-lg hover:bg-rose-50 transition" title="습관 삭제">
+                  ✕
+                </button>
+              </div>
             </div>
           `;
         }).join('');
@@ -458,13 +499,13 @@
           <th class="py-3 px-1.5 text-center min-w-[44px]">
             <div class="flex flex-col items-center">
               <span class="text-[11px] ${d.isToday ? 'text-indigo-600 font-bold' : 'text-slate-400'}">${d.dayName}</span>
-              <span class="mt-0.5 w-6 h-6 flex items-center justify-center rounded-full text-xs ${ d.isToday ? 'bg-indigo-600 text-white font-bold' : 'text-slate-600' }">${d.dayNum}</span>
+              <span class="mt-0.5 w-6 h-6 flex items-center justify-center rounded-full text-xs ${d.isToday ? 'bg-indigo-600 text-white font-bold' : 'text-slate-600'}">${d.dayNum}</span>
             </div>
           </th>
         `).join('')}
         <th class="py-3 pl-3 text-center min-w-[72px]">주간 달성</th>
         <th class="py-3 pl-2 text-center min-w-[72px]">연속(Streak)</th>
-        <th class="py-3 pl-1 text-right w-8"></th>
+
       `;
 
       // 6. 우측: 주간 매트릭스 바디 렌더링
@@ -480,13 +521,12 @@
             return `
               <td class="py-3 px-1.5 text-center">
                 <button onclick="toggleHabitCheck('${h.id}', '${d.key}')"
-                  class="check-anim w-8 h-8 rounded-xl mx-auto flex items-center justify-center transition ${
-                    done
-                      ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-200'
-                      : d.isToday
-                        ? 'bg-indigo-50 border-2 border-indigo-300 text-transparent hover:border-indigo-400'
-                        : 'bg-slate-100 text-transparent hover:bg-slate-200'
-                  }" title="${d.key} 달성 체크">
+                  class="check-anim w-8 h-8 rounded-xl mx-auto flex items-center justify-center transition ${done
+                ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-200'
+                : d.isToday
+                  ? 'bg-indigo-50 border-2 border-indigo-300 text-transparent hover:border-indigo-400'
+                  : 'bg-slate-100 text-transparent hover:bg-slate-200'
+              }" title="${d.key} 달성 체크">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                 </button>
               </td>
@@ -510,16 +550,12 @@
                 <span class="block text-[10px] text-slate-400">${rowRate}%</span>
               </td>
               <td class="py-3.5 pl-2 text-center">
-                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${
-                  streak >= 3 ? 'bg-amber-100 text-amber-700' : streak > 0 ? 'bg-slate-100 text-slate-700' : 'text-slate-400'
-                }">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${streak >= 3 ? 'bg-amber-100 text-amber-700' : streak > 0 ? 'bg-slate-100 text-slate-700' : 'text-slate-400'
+            }">
                   🔥 ${streak}일
                 </span>
               </td>
-              <td class="py-3.5 pl-1 text-right">
-                <button onclick="deleteHabit('${h.id}')" class="text-slate-300 hover:text-rose-500 p-1 transition" title="습관 삭제">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                </button>
+
               </td>
             </tr>
           `;
@@ -535,4 +571,5 @@
     render();
   </script>
 </body>
+
 </html>
